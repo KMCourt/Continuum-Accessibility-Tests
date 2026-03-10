@@ -1,0 +1,18 @@
+node_modules/
+
+# Results folders — generated locally, not committed
+ConPartner-accessibility-tests/ConPartner-results/
+ConPartner-accessibility-tests/ConPartner-dev-debug/
+ConManager-accessibility-tests/ConManager-results/
+ConManager-accessibility-tests/ConManager-dev-debug/
+ConDriver-accessibility-tests/ConDriver-results/
+ConDriver-accessibility-tests/ConDriver-dev-debug/
+test-results/
+results/
+
+# Private credentials — never commit
+.env
+
+# Generated output files — regenerate locally when needed
+*.pptx
+*.docx
