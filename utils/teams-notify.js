@@ -7,7 +7,7 @@
  * ===========================================
  */
 
-async function postToTeams({ webhookUrl, summaryData, today, regressions, label = 'Accessibility Scan' }) {
+async function postToTeams({ webhookUrl, summaryData, today, regressions, label = 'Accessibility Scan', topRule }) {
   const now = new Date();
   const time = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
@@ -17,25 +17,55 @@ async function postToTeams({ webhookUrl, summaryData, today, regressions, label 
     return;
   }
 
-  const totalViolations = summaryData.reduce((s, r) => s + r.total, 0);
-  const hasRegressions = regressions && regressions.length > 0;
+  const totalViolations = summaryData.reduce((s, r) => s + (r.total    || 0), 0);
+  const totalCritical   = summaryData.reduce((s, r) => s + (r.critical || 0), 0);
+  const totalSerious    = summaryData.reduce((s, r) => s + (r.serious  || 0), 0);
+  const totalModerate   = summaryData.reduce((s, r) => s + (r.moderate || 0), 0);
+  const totalMinor      = summaryData.reduce((s, r) => s + (r.minor    || 0), 0);
+
+  const passCount = summaryData.filter(r => r.total === 0).length;
+  const passRate  = summaryData.length > 0 ? Math.round((passCount / summaryData.length) * 100) : 0;
+
+  const hasRegressions  = regressions && regressions.length > 0;
   const regressionNames = hasRegressions
     ? regressions.map(r => `${r.page} (${r.browser})`).join(', ')
     : 'None';
 
   const resultRows = summaryData.map(r => {
     const isRegression = regressions?.some(x => x.page === r.page && x.browser === r.browser);
+
+    let trend = '→';
+    let trendColor = 'Default';
+    if (r.previousCounts && r.previousCounts.total !== undefined) {
+      if (r.total > r.previousCounts.total)      { trend = '↑'; trendColor = 'Attention'; }
+      else if (r.total < r.previousCounts.total) { trend = '↓'; trendColor = 'Good'; }
+    }
+
     return {
       type: 'ColumnSet',
       columns: [
         { type: 'Column', width: 'stretch', items: [{ type: 'TextBlock', text: `${r.page} — ${r.browser}`, wrap: true, size: 'Small' }] },
-        { type: 'Column', width: 'auto',    items: [{ type: 'TextBlock', text: String(r.total),    color: r.total    > 0 ? 'Warning'  : 'Good', size: 'Small' }] },
-        { type: 'Column', width: 'auto',    items: [{ type: 'TextBlock', text: String(r.critical), color: r.critical > 0 ? 'Attention': 'Good', size: 'Small' }] },
-        { type: 'Column', width: 'auto',    items: [{ type: 'TextBlock', text: isRegression ? '⚠️' : '✅', size: 'Small' }] },
+        { type: 'Column', width: 'auto',    items: [{ type: 'TextBlock', text: String(r.total),    color: r.total    > 0 ? 'Warning'   : 'Good',      size: 'Small' }] },
+        { type: 'Column', width: 'auto',    items: [{ type: 'TextBlock', text: String(r.critical), color: r.critical > 0 ? 'Attention' : 'Good',      size: 'Small' }] },
+        { type: 'Column', width: 'auto',    items: [{ type: 'TextBlock', text: trend,              color: trendColor,                                  size: 'Small' }] },
+        { type: 'Column', width: 'auto',    items: [{ type: 'TextBlock', text: isRegression ? '⚠️' : '✅',                                             size: 'Small' }] },
       ],
       separator: true,
     };
   });
+
+  const facts = [
+    { title: 'Total violations', value: String(totalViolations) },
+    { title: 'Critical',         value: String(totalCritical) },
+    { title: 'Serious',          value: String(totalSerious) },
+    { title: 'Moderate',         value: String(totalModerate) },
+    { title: 'Minor',            value: String(totalMinor) },
+    { title: 'Pass rate',        value: `${passRate}% (${passCount} of ${summaryData.length} scans clean)` },
+    { title: 'Regressions',      value: regressionNames },
+    { title: 'Pages scanned',    value: String(summaryData.length) },
+  ];
+
+  if (topRule) facts.push({ title: 'Top issue', value: topRule });
 
   const card = {
     type: 'AdaptiveCard',
@@ -52,11 +82,7 @@ async function postToTeams({ webhookUrl, summaryData, today, regressions, label 
       },
       {
         type: 'FactSet',
-        facts: [
-          { title: 'Total violations', value: String(totalViolations) },
-          { title: 'Regressions',      value: regressionNames },
-          { title: 'Pages scanned',    value: String(summaryData.length) },
-        ],
+        facts,
       },
       {
         type: 'TextBlock',
@@ -71,6 +97,7 @@ async function postToTeams({ webhookUrl, summaryData, today, regressions, label 
           { type: 'Column', width: 'stretch', items: [{ type: 'TextBlock', text: 'Page — Browser', weight: 'Bolder', size: 'Small' }] },
           { type: 'Column', width: 'auto',    items: [{ type: 'TextBlock', text: 'Total',          weight: 'Bolder', size: 'Small' }] },
           { type: 'Column', width: 'auto',    items: [{ type: 'TextBlock', text: 'Crit',           weight: 'Bolder', size: 'Small' }] },
+          { type: 'Column', width: 'auto',    items: [{ type: 'TextBlock', text: 'Trend',          weight: 'Bolder', size: 'Small' }] },
           { type: 'Column', width: 'auto',    items: [{ type: 'TextBlock', text: 'OK?',            weight: 'Bolder', size: 'Small' }] },
         ],
       },
