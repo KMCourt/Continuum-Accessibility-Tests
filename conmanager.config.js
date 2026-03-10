@@ -13,6 +13,7 @@ module.exports = defineConfig({
 
   testDir: './ConManager-accessibility-tests',
 
+  globalSetup: './utils/conmanager-setup.js',
   globalTeardown: './utils/conmanager-teardown.js',
 
   outputDir: './ConManager-accessibility-tests/ConManager-dev-debug',
@@ -24,10 +25,11 @@ module.exports = defineConfig({
 
   reporter: [
     ['list'],
-    ['html', { outputFolder: 'ConManager-accessibility-tests/ConManager-dev-debug/html-report', open: 'never' }],
+    ['html', { outputFolder: 'ConManager-accessibility-tests/ConManager-html-report', open: 'never' }],
   ],
 
   use: {
+    storageState: 'conmanager-auth.json',
     screenshot: 'only-on-failure',
     video: 'on-first-retry',
     trace: 'on-first-retry',

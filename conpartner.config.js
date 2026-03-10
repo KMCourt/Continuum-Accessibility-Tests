@@ -13,6 +13,7 @@ module.exports = defineConfig({
 
   testDir: './ConPartner-accessibility-tests',
 
+  globalSetup: './utils/conpartner-setup.js',
   globalTeardown: './utils/conpartner-teardown.js',
 
   outputDir: './ConPartner-accessibility-tests/ConPartner-dev-debug',
@@ -24,10 +25,11 @@ module.exports = defineConfig({
 
   reporter: [
     ['list'],
-    ['html', { outputFolder: 'ConPartner-accessibility-tests/ConPartner-dev-debug/html-report', open: 'never' }],
+    ['html', { outputFolder: 'ConPartner-accessibility-tests/ConPartner-html-report', open: 'never' }],
   ],
 
   use: {
+    storageState: 'conpartner-auth.json',
     screenshot: 'only-on-failure',
     video: 'on-first-retry',
     trace: 'on-first-retry',

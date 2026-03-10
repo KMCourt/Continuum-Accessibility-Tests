@@ -13,6 +13,7 @@ module.exports = defineConfig({
 
   testDir: './ConDriver-accessibility-tests',
 
+  globalSetup: './utils/condriver-setup.js',
   globalTeardown: './utils/condriver-teardown.js',
 
   outputDir: './ConDriver-accessibility-tests/ConDriver-dev-debug',
@@ -24,10 +25,11 @@ module.exports = defineConfig({
 
   reporter: [
     ['list'],
-    ['html', { outputFolder: 'ConDriver-accessibility-tests/ConDriver-dev-debug/html-report', open: 'never' }],
+    ['html', { outputFolder: 'ConDriver-accessibility-tests/ConDriver-html-report', open: 'never' }],
   ],
 
   use: {
+    storageState: 'condriver-auth.json',
     screenshot: 'only-on-failure',
     video: 'on-first-retry',
     trace: 'on-first-retry',

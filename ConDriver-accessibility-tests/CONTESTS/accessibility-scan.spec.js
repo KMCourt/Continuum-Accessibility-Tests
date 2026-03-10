@@ -30,10 +30,12 @@ const PAGES = [
   {
     name: 'Login Page',
     url: 'https://ttc-eun-uat-c-employee-as.azurewebsites.net/login',
+    requiresAuth: false,
   },
   {
     name: 'Dashboard',
     url: 'https://ttc-eun-uat-c-employee-as.azurewebsites.net/dashboard',
+    requiresAuth: true,
   },
 ];
 
@@ -60,8 +62,10 @@ test.describe('Accessibility Scan', () => {
 
       if (pageDef.timeout) test.setTimeout(pageDef.timeout);
 
-      await page.context().clearCookies();
-      await page.evaluate(() => { try { localStorage.clear(); sessionStorage.clear(); } catch {} });
+      if (!pageDef.requiresAuth) {
+        await page.context().clearCookies();
+        await page.evaluate(() => { try { localStorage.clear(); sessionStorage.clear(); } catch {} });
+      }
 
       await page.goto(pageDef.url, { waitUntil: 'domcontentloaded' });
       await page.waitForTimeout(3000);

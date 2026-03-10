@@ -12,6 +12,7 @@ results/
 
 # Private credentials — never commit
 .env
+*-auth.json
 
 # Generated output files — regenerate locally when needed
 *.pptx

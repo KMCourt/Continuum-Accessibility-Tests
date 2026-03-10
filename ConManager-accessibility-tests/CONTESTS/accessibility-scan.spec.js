@@ -30,38 +30,49 @@ const PAGES = [
   {
     name: 'Login Page',
     url: 'https://ttc-eun-uat-c-manager-hub-as.azurewebsites.net/login',
+    requiresAuth: false,
   },
   {
     name: 'Dashboard',
     url: 'https://ttc-eun-uat-c-manager-hub-as.azurewebsites.net/dashboard',
+    requiresAuth: true,
   },
   {
     name: 'Contact Us Modal',
     url: 'https://ttc-eun-uat-c-manager-hub-as.azurewebsites.net/',
+    requiresAuth: true,
     scanScope: '[role="dialog"]',
     setup: async (page) => {
       // Click the "CONTACT US" header nav link (not the floating chat widget)
       await page.locator('header a:has-text("CONTACT US"), header button:has-text("CONTACT US"), nav a:has-text("CONTACT US")').first().click();
-      // Wait for the MUI Dialog to become visible
-      await page.waitForFunction(() => {
-        const dialog = document.querySelector('[role="dialog"]');
-        if (!dialog) return false;
-        const style = window.getComputedStyle(dialog);
-        return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
-      });
+      // Wait for the MUI Dialog paper (not the Drawer which is always present in the DOM)
+      await page.locator('.MuiDialog-paper').waitFor({ state: 'visible' });
       await page.waitForTimeout(500);
     },
   },
   {
     name: 'Virtual Assistant Chat Widget',
     url: 'https://ttc-eun-uat-c-manager-hub-as.azurewebsites.net/',
-    scanScope: '[class*="livesdk__chat-sdk-window"]',
+    requiresAuth: true,
+    // scanScope omitted — axe-core cannot pierce shadow DOM via include(),
+    // so the full page is scanned with the chat widget open
     setup: async (page) => {
-      // Click the floating LiveSDK chat launcher button (bottom right)
-      await page.locator('[class*="livesdk__placement"] button, [class*="livesdk"] button[aria-label]').first().click();
-      // Wait for the chat window welcome screen to appear
-      await page.waitForSelector('[class*="livesdk__chat-sdk-window"]', { state: 'visible' });
-      await page.waitForTimeout(500);
+      // The LiveSDK launcher lives inside a shadow DOM (#livesdk__campaign)
+      // Use JS to find and click the first visible non-close button inside the shadow root
+      await page.evaluate(() => {
+        const host = document.querySelector('#livesdk__campaign');
+        const root = host?.shadowRoot;
+        if (!root) return;
+        const buttons = [...root.querySelectorAll('button')];
+        const launcher = buttons.find(b => {
+          const cls = b.className || '';
+          return !cls.includes('close') && !cls.includes('submit') &&
+                 b.offsetWidth > 0 && b.offsetHeight > 0;
+        });
+        if (launcher) launcher.click();
+      });
+      // Wait for the chat window to open
+      await page.waitForTimeout(2000);
     },
   },
   {
@@ -93,8 +104,10 @@ test.describe('Accessibility Scan', () => {
 
       if (pageDef.timeout) test.setTimeout(pageDef.timeout);
 
-      await page.context().clearCookies();
-      await page.evaluate(() => { try { localStorage.clear(); sessionStorage.clear(); } catch {} });
+      if (!pageDef.requiresAuth) {
+        await page.context().clearCookies();
+        await page.evaluate(() => { try { localStorage.clear(); sessionStorage.clear(); } catch {} });
+      }
 
       await page.goto(pageDef.url, { waitUntil: 'domcontentloaded' });
       await page.waitForTimeout(3000);
