@@ -1,13 +1,14 @@
 /**
  * generate-report.js
- * Builds scan-results-2026-03-10.html from all axe-core JSON result files.
- * Run: node generate-report.js
+ * Builds a combined scan-results-{date}.html from all axe-core JSON result files.
+ * Run manually: node generate-report.js
+ * Or call generateCombinedReport(date) from a teardown.
  */
 
 const fs   = require('fs');
 const path = require('path');
 
-const DATE = '2026-03-10';
+function generateCombinedReport(DATE) {
 
 const APPS = [
   {
@@ -563,5 +564,16 @@ const html = `<!DOCTYPE html>
 </body>
 </html>`;
 
-fs.writeFileSync('scan-results-2026-03-10.html', html, 'utf8');
-console.log('✅  scan-results-2026-03-10.html written —', Math.round(html.length / 1024), 'KB');
+const outFile = path.join(__dirname, `scan-results-${DATE}.html`);
+fs.writeFileSync(outFile, html, 'utf8');
+console.log(`✅  scan-results-${DATE}.html written —`, Math.round(html.length / 1024), 'KB');
+
+} // end generateCombinedReport
+
+module.exports = { generateCombinedReport };
+
+// Allow running directly: node generate-report.js
+if (require.main === module) {
+  const today = new Date().toISOString().split('T')[0];
+  generateCombinedReport(today);
+}

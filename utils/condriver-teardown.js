@@ -9,6 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const { generateConsolidatedReport } = require('./report-generator');
 const { postToTeams } = require('./teams-notify');
+const { generateCombinedReport } = require('../generate-report');
 
 const RETENTION_DAYS = 90;
 
@@ -108,4 +109,6 @@ module.exports = async function globalTeardown() {
     summaryData, today, regressions,
     label: 'ConDriver Accessibility Scan',
   });
+
+  generateCombinedReport(today);
 };
