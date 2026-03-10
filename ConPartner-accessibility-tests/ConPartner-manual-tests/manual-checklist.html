@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ConPartner — Manual Accessibility Checklist</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #333;
+    }
+
+    /* ── Header ── */
+    header {
+      background: #1a3a5a;
+      color: #fff;
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,.3);
+    }
+    header h1 { font-size: 1.2rem; font-weight: 700; }
+    header p  { font-size: 0.8rem; color: #a8c4d8; margin-top: 2px; }
+
+    .header-right { display: flex; gap: 10px; align-items: center; }
+
+    .meta-row {
+      display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+    }
+    .meta-row label { font-size: 0.78rem; color: #a8c4d8; }
+    .meta-row input {
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 4px;
+      color: #fff;
+      padding: 3px 8px;
+      font-size: 0.82rem;
+      width: 150px;
+    }
+    .meta-row input::placeholder { color: rgba(255,255,255,.45); }
+
+    /* ── Progress bar ── */
+    .progress-bar-wrap {
+      background: #1a3a5a;
+      padding: 8px 32px 12px;
+      border-bottom: 3px solid #e65100;
+    }
+    .progress-label {
+      display: flex; justify-content: space-between;
+      font-size: 0.78rem; color: #a8c4d8; margin-bottom: 5px;
+    }
+    .progress-bar-bg {
+      background: rgba(255,255,255,.15);
+      border-radius: 6px; height: 8px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      background: #4caf50; height: 100%;
+      border-radius: 6px;
+      transition: width .4s ease;
+    }
+
+    /* ── Layout ── */
+    .layout { display: flex; min-height: calc(100vh - 110px); }
+
+    /* ── Sidebar ── */
+    nav {
+      width: 230px;
+      min-width: 230px;
+      background: #fff;
+      border-right: 1px solid #dde2e8;
+      overflow-y: auto;
+      position: sticky;
+      top: 110px;
+      height: calc(100vh - 110px);
+    }
+    nav h2 {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #888;
+      padding: 14px 14px 6px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      font-size: 0.82rem;
+      color: #444;
+      text-decoration: none;
+      transition: background .15s;
+    }
+    .nav-item:hover { background: #f5f7fa; }
+    .nav-item.active {
+      border-left-color: #1a3a5a;
+      background: #eef3f9;
+      color: #1a3a5a;
+      font-weight: 600;
+    }
+    .nav-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      flex-shrink: 0;
+      background: #ddd;
+    }
+    .nav-item.done   .nav-dot { background: #4caf50; }
+    .nav-item.partial .nav-dot { background: #f9a825; }
+    .nav-item.fail   .nav-dot { background: #cc0000; }
+
+    /* ── Main content ── */
+    main { flex: 1; padding: 24px 28px; }
+
+    .page-section {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .page-header {
+      background: #1a3a5a;
+      color: #fff;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+    }
+    .page-header h3 { font-size: 1rem; font-weight: 700; }
+    .page-header .page-meta { font-size: 0.78rem; color: #a8c4d8; margin-top: 2px; }
+    .page-header .toggle { font-size: 1.1rem; transition: transform .2s; }
+    .page-section.collapsed .toggle { transform: rotate(-90deg); }
+    .page-body { display: block; padding: 0; }
+    .page-section.collapsed .page-body { display: none; }
+
+    /* ── Category group ── */
+    .category {
+      border-bottom: 1px solid #eee;
+      padding: 14px 20px;
+    }
+    .category:last-child { border-bottom: none; }
+    .category-title {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: #1a3a5a;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .category-title .cat-icon { font-size: 1rem; }
+
+    /* ── Check row ── */
+    .check-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: start;
+      padding: 7px 0;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .check-row:last-child { border-bottom: none; }
+    .check-label { font-size: 0.88rem; color: #333; line-height: 1.45; }
+    .check-label .hint { font-size: 0.78rem; color: #888; display: block; margin-top: 2px; }
+
+    .radio-group { display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
+    .radio-group label {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      padding: 3px 8px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      transition: background .12s, border-color .12s;
+      white-space: nowrap;
+    }
+    .radio-group input[type="radio"] { display: none; }
+    .radio-group label:has(input[value="pass"]:checked)  { background: #e8f5e9; border-color: #4caf50; color: #2e7d32; font-weight: 600; }
+    .radio-group label:has(input[value="fail"]:checked)  { background: #ffebee; border-color: #cc0000; color: #cc0000; font-weight: 600; }
+    .radio-group label:has(input[value="na"]:checked)    { background: #f5f5f5; border-color: #aaa;    color: #666;    font-weight: 600; }
+
+    /* ── Notes ── */
+    .notes-row { margin-top: 10px; }
+    .notes-row textarea {
+      width: 100%; border: 1px solid #ddd; border-radius: 4px;
+      padding: 6px 10px; font-size: 0.82rem; color: #333;
+      resize: vertical; min-height: 48px; font-family: inherit;
+      transition: border-color .15s;
+    }
+    .notes-row textarea:focus { outline: none; border-color: #1a3a5a; }
+    .notes-label { font-size: 0.75rem; color: #888; margin-bottom: 4px; }
+
+    /* ── Action bar ── */
+    .action-bar {
+      display: flex; gap: 10px; padding: 10px 20px;
+      background: #f8f9fa;
+      border-top: 1px solid #eee;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 6px 16px; border-radius: 5px; border: none;
+      cursor: pointer; font-size: 0.82rem; font-weight: 600;
+      transition: opacity .15s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn-navy   { background: #1a3a5a; color: #fff; }
+    .btn-outline { background: #fff; color: #1a3a5a; border: 1.5px solid #1a3a5a; }
+    .btn-danger  { background: #cc0000; color: #fff; }
+
+    /* ── Summary table ── */
+    #summary-section {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    #summary-section h2 { font-size: 1rem; color: #1a3a5a; margin-bottom: 14px; border-bottom: 2px solid #1a3a5a; padding-bottom: 6px; }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .summary-card {
+      border-radius: 6px;
+      padding: 12px 14px;
+      text-align: center;
+    }
+    .summary-card .sc-num  { font-size: 1.8rem; font-weight: 700; }
+    .summary-card .sc-lbl  { font-size: 0.75rem; margin-top: 2px; }
+    .card-total   { background: #e3eaf3; color: #1a3a5a; }
+    .card-pass    { background: #e8f5e9; color: #2e7d32; }
+    .card-fail    { background: #ffebee; color: #cc0000; }
+    .card-na      { background: #f5f5f5; color: #666; }
+    .card-pending { background: #fff8e1; color: #f57f17; }
+
+    .fails-list { margin-top: 8px; }
+    .fail-item {
+      background: #ffebee; border-left: 3px solid #cc0000;
+      padding: 7px 12px; border-radius: 0 4px 4px 0;
+      margin-bottom: 5px; font-size: 0.82rem;
+    }
+    .fail-item strong { color: #cc0000; }
+
+    /* ── Print ── */
+    @media print {
+      header, nav, .action-bar, .progress-bar-wrap,
+      .btn, .radio-group { display: none !important; }
+      .page-section.collapsed .page-body { display: block !important; }
+      body { background: #fff; }
+      main { padding: 0; }
+    }
+
+    /* ── Tooltip ── */
+    .info-tip {
+      display: inline-block; width: 14px; height: 14px;
+      background: #1a3a5a; color: #fff;
+      border-radius: 50%; font-size: 9px; text-align: center;
+      line-height: 14px; cursor: help; flex-shrink: 0;
+      margin-left: 4px;
+    }
+
+    /* ── Page meta: URL link + nav instructions ── */
+    .page-meta-wrap { margin-top: 3px; display: flex; flex-direction: column; gap: 3px; }
+    .page-meta-link {
+      font-size: 0.78rem; color: #a8c4d8;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .page-meta-link a {
+      color: #7ec8f4; text-decoration: underline;
+      transition: color .15s;
+    }
+    .page-meta-link a:hover { color: #fff; }
+    .nav-instructions {
+      font-size: 0.75rem; color: #a8c4d8;
+      font-style: italic; line-height: 1.4;
+    }
+
+    /* ── Tools Guide panel ── */
+    #tools-guide {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .tools-guide-header {
+      background: #1a3a5a;
+      color: #fff;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+    }
+    .tools-guide-header h2 { font-size: 1rem; font-weight: 700; }
+    .tools-guide-header .toggle { font-size: 1.1rem; transition: transform .2s; }
+    #tools-guide.collapsed .toggle { transform: rotate(-90deg); }
+    .tools-guide-body { padding: 16px 20px; }
+    #tools-guide.collapsed .tools-guide-body { display: none; }
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+    .tool-card {
+      background: #f8f9fa;
+      border: 1px solid #e0e4ea;
+      border-radius: 6px;
+      padding: 12px 14px;
+    }
+    .tool-card-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #1a3a5a;
+      margin-bottom: 6px;
+    }
+    .tool-card p {
+      font-size: 0.8rem;
+      color: #444;
+      line-height: 1.5;
+      margin-bottom: 5px;
+    }
+    .tool-card p:last-child { margin-bottom: 0; }
+    .tool-card a { color: #1a3a5a; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>ConPartner — Manual Accessibility Checklist</h1>
+    <p>For checks that automated tools cannot detect — complete alongside the automated report</p>
+  </div>
+  <div class="header-right">
+    <div class="meta-row">
+      <div>
+        <label for="tester-name">Tester</label>
+        <input id="tester-name" type="text" placeholder="Your name" oninput="saveMeta()">
+      </div>
+      <div>
+        <label for="test-date">Date</label>
+        <input id="test-date" type="date" oninput="saveMeta()">
+      </div>
+      <div>
+        <label for="sprint-ref">Sprint / Release</label>
+        <input id="sprint-ref" type="text" placeholder="e.g. Sprint 12" oninput="saveMeta()">
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="progress-bar-wrap">
+  <div class="progress-label">
+    <span id="progress-text">0 of 0 checks completed</span>
+    <span id="fail-count-text" style="color:#ff8a80;"></span>
+  </div>
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <nav>
+    <h2>Pages</h2>
+    <a class="nav-item" href="#summary-section" onclick="scrollTo('summary-section')">
+      <span class="nav-dot"></span> Summary
+    </a>
+    <div id="nav-links"></div>
+  </nav>
+
+  <!-- Main -->
+  <main id="main-content">
+
+    <!-- Tools Guide -->
+    <div id="tools-guide">
+      <div class="tools-guide-header" onclick="toggleToolsGuide()">
+        <h2>🧰 How to Test — Tools Guide</h2>
+        <span class="toggle">▼</span>
+      </div>
+      <div class="tools-guide-body">
+        <div class="tools-grid">
+          <div class="tool-card">
+            <div class="tool-card-title">🔊 Screen Reader</div>
+            <p><strong>NVDA</strong> (free, Windows) — download from <a href="https://www.nvaccess.org" target="_blank">nvaccess.org</a>.<br>Start: Win+Ctrl+Enter or open from Start Menu.</p>
+            <p>Navigate: <kbd>Tab</kbd> (interactive elements), <kbd>Arrow keys</kbd> (read content), <kbd>H</kbd> (headings), <kbd>B</kbd> (buttons), <kbd>F</kbd> (form fields).</p>
+            <p>On Mac/iOS: VoiceOver is built-in — <kbd>Cmd+F5</kbd> on Mac, triple-press Home on iOS.</p>
+          </div>
+          <div class="tool-card">
+            <div class="tool-card-title">⌨️ Keyboard Navigation</div>
+            <p>No tools needed. Put the mouse aside.</p>
+            <p>Use: <kbd>Tab</kbd> (next element), <kbd>Shift+Tab</kbd> (previous), <kbd>Enter</kbd>/<kbd>Space</kbd> (activate), <kbd>Arrow keys</kbd> (menus/dropdowns), <kbd>Escape</kbd> (close modals).</p>
+            <p>Start from the browser address bar and Tab into the page.</p>
+          </div>
+          <div class="tool-card">
+            <div class="tool-card-title">🎨 Colour Contrast</div>
+            <p>Use the free <strong>Colour Contrast Analyser</strong> app — download from <a href="https://www.tpgi.com/color-contrast-checker/" target="_blank">tpgi.com/color-contrast-checker</a> — to eyedropper colours from the screen.</p>
+            <p>Also in Chrome DevTools: right-click any text element → Inspect → click the colour swatch in the CSS panel to see the contrast ratio.</p>
+          </div>
+          <div class="tool-card">
+            <div class="tool-card-title">🔍 Browser Extensions</div>
+            <p>Install <strong>axe DevTools</strong> (free version by Deque) from the Chrome/Firefox extension store. Open DevTools (<kbd>F12</kbd>) → axe DevTools tab → Scan page.</p>
+            <p>Also useful: <strong>WAVE</strong> extension from WebAIM (<a href="https://wave.webaim.org" target="_blank">wave.webaim.org</a>) — adds visual overlays showing errors directly on the page.</p>
+          </div>
+          <div class="tool-card">
+            <div class="tool-card-title">📱 Mobile Emulation</div>
+            <p>In Chrome: <kbd>F12</kbd> → click the device toolbar icon (or <kbd>Ctrl+Shift+M</kbd>) → select a device (e.g. iPhone 15 Pro, Galaxy S24).</p>
+            <p>For real-device screen reader testing: VoiceOver on iOS (Settings → Accessibility → VoiceOver) or TalkBack on Android (Settings → Accessibility → TalkBack).</p>
+          </div>
+          <div class="tool-card">
+            <div class="tool-card-title">🔎 Zoom Testing</div>
+            <p>In any browser: <kbd>Ctrl+Plus</kbd> (<kbd>Cmd+Plus</kbd> on Mac) to zoom to 200%. Check nothing overlaps or disappears.</p>
+            <p>Also test OS-level text size: Windows Settings → Accessibility → Text size.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div id="summary-section">
+      <h2>Summary</h2>
+      <div class="summary-grid">
+        <div class="summary-card card-total">
+          <div class="sc-num" id="sum-total">0</div>
+          <div class="sc-lbl">Total Checks</div>
+        </div>
+        <div class="summary-card card-pass">
+          <div class="sc-num" id="sum-pass">0</div>
+          <div class="sc-lbl">Passed</div>
+        </div>
+        <div class="summary-card card-fail">
+          <div class="sc-num" id="sum-fail">0</div>
+          <div class="sc-lbl">Failed</div>
+        </div>
+        <div class="summary-card card-na">
+          <div class="sc-num" id="sum-na">0</div>
+          <div class="sc-lbl">N/A</div>
+        </div>
+        <div class="summary-card card-pending">
+          <div class="sc-num" id="sum-pending">0</div>
+          <div class="sc-lbl">Not yet checked</div>
+        </div>
+      </div>
+      <div class="fails-list" id="fails-list"></div>
+    </div>
+
+    <!-- Page sections injected by JS -->
+    <div id="pages-container"></div>
+
+    <!-- Bottom actions -->
+    <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">
+      <button class="btn btn-outline" onclick="expandAll()">Expand all</button>
+      <button class="btn btn-outline" onclick="collapseAll()">Collapse all</button>
+      <button class="btn btn-navy"    onclick="window.print()">🖨 Print / Save PDF</button>
+      <button class="btn btn-danger"  onclick="clearAll()">Reset all answers</button>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────────────────────────────────────
+
+const BASE_URL = 'https://ttc-eun-uat-c-partner-hub-as.azurewebsites.net';
+const PAGES = [
+  { id: 'landing-page', name: 'Landing Page', url: BASE_URL, nav: null },
+];
+
+const CATEGORIES = [
+  {
+    id: 'screen-reader',
+    icon: '🔊',
+    title: 'Screen Reader',
+    hint: 'Test using NVDA (Windows) or VoiceOver (Mac/iOS). Navigate with arrow keys and Tab.',
+    checks: [
+      { id: 'sr-1', label: 'Page title is announced correctly when the page loads', hint: 'Title should describe the page purpose, not just the site name' },
+      { id: 'sr-2', label: 'All images have meaningful alternative text announced', hint: 'Decorative images should be silent; informative images should describe their content' },
+      { id: 'sr-3', label: 'Form labels are read aloud before their input fields', hint: 'Screen reader should say the label before announcing the field type' },
+      { id: 'sr-4', label: 'Error messages are announced automatically when they appear', hint: 'Errors should not require the user to navigate back to find them' },
+      { id: 'sr-5', label: 'Modal dialogs announce their heading when they open', hint: 'Focus should move into the modal and the heading should be announced' },
+      { id: 'sr-6', label: 'Buttons and links have descriptive names (not just "click here")', hint: 'Avoid vague names — screen reader users often browse by button/link lists' },
+      { id: 'sr-7', label: 'Dynamic content changes are announced', hint: 'Use ARIA live regions for content that updates without a page reload' },
+      { id: 'sr-8', label: 'Table headers are read before cell content in data tables', hint: 'Screen readers should say "Column name: value" not just the value' },
+    ],
+  },
+  {
+    id: 'keyboard',
+    icon: '⌨️',
+    title: 'Keyboard Navigation',
+    hint: 'Navigate the page using only Tab, Shift+Tab, Enter, Space, and arrow keys — no mouse.',
+    checks: [
+      { id: 'kb-1', label: 'Every interactive element can be reached using Tab key', hint: 'Nothing should be skipped that a mouse user can click' },
+      { id: 'kb-2', label: 'Focus indicator is clearly visible on every focused element', hint: 'Should be a visible outline or highlight — not hidden by CSS' },
+      { id: 'kb-3', label: 'Tab order follows a logical left-to-right, top-to-bottom flow', hint: 'Focus jumping unexpectedly breaks the experience for keyboard users' },
+      { id: 'kb-4', label: 'Modal dialogs trap focus correctly (Tab cycles within the modal)', hint: 'Focus should not escape to the page behind the modal' },
+      { id: 'kb-5', label: 'Modal dialogs can be closed with the Escape key', hint: 'Standard keyboard behaviour expected by all users' },
+      { id: 'kb-6', label: 'After a modal closes, focus returns to the element that opened it', hint: 'Prevents keyboard users from losing their place on the page' },
+      { id: 'kb-7', label: 'Dropdown menus can be opened and navigated with keyboard', hint: 'Arrow keys should navigate options; Enter/Space should select' },
+      { id: 'kb-8', label: 'No keyboard trap exists outside of modals', hint: 'User must always be able to navigate away from any element using Tab/Shift+Tab' },
+    ],
+  },
+  {
+    id: 'visual',
+    icon: '👁️',
+    title: 'Visual & Colour',
+    hint: 'Check at 100% zoom and again at 200% zoom. Also test with Windows High Contrast mode if available.',
+    checks: [
+      { id: 'vi-1', label: 'Information is not conveyed by colour alone', hint: 'e.g. error states should show an icon or text, not just a red border' },
+      { id: 'vi-2', label: 'Page content is usable at 200% browser zoom without horizontal scrolling', hint: 'Zoom in and check nothing overlaps or becomes unreachable' },
+      { id: 'vi-3', label: 'Text over images or gradients has sufficient contrast', hint: 'Automated tools miss this — check hero images, banners, and cards manually' },
+      { id: 'vi-4', label: 'Placeholder text in form fields is not used as the only label', hint: 'Placeholder disappears when typing — the visible label must remain' },
+      { id: 'vi-5', label: 'Hover and focus states are visually distinct from the default state', hint: 'Interactive elements should change appearance to indicate state' },
+    ],
+  },
+  {
+    id: 'content',
+    icon: '📝',
+    title: 'Content & Structure',
+    hint: 'Review the page headings, reading order, and link text without using visual layout as a guide.',
+    checks: [
+      { id: 'co-1', label: 'Heading hierarchy makes sense when read in order (H1 → H2 → H3)', hint: 'There should be exactly one H1 per page; sub-sections use H2/H3' },
+      { id: 'co-2', label: 'Reading order matches the visual layout when content is linearised', hint: 'Use the browser Accessibility Tree or screen reader to verify order' },
+      { id: 'co-3', label: 'Links that open in a new tab warn the user in their text or label', hint: 'e.g. "Terms and conditions (opens in new tab)"' },
+      { id: 'co-4', label: 'Instructions do not rely on shape, size, colour, or position alone', hint: 'e.g. "Click the green button on the right" is inaccessible to some users' },
+      { id: 'co-5', label: 'Language of the page is set correctly in the HTML lang attribute', hint: 'Screen readers use this to choose the correct voice/pronunciation' },
+    ],
+  },
+  {
+    id: 'forms',
+    icon: '📋',
+    title: 'Forms & Errors',
+    hint: 'Submit forms with invalid data and check how errors are presented.',
+    checks: [
+      { id: 'fo-1', label: 'Required fields are clearly indicated (not by colour alone)', hint: 'An asterisk (*) with a legend, or "Required" text, is acceptable' },
+      { id: 'fo-2', label: 'Validation errors identify the specific field that has the problem', hint: 'Avoid generic "Form has errors" messages — name the field' },
+      { id: 'fo-3', label: 'Error messages suggest how to fix the problem', hint: 'e.g. "Enter a valid email address (example@email.com)"' },
+      { id: 'fo-4', label: 'Timeout warnings give the user adequate notice and a way to extend', hint: 'Particularly important on any time-sensitive pages' },
+      { id: 'fo-5', label: 'Sensitive fields use the correct autocomplete attributes', hint: 'Allows password managers and assistive tech to fill fields correctly' },
+    ],
+  },
+  {
+    id: 'media',
+    icon: '🎬',
+    title: 'Media & Motion',
+    hint: 'Check any video, audio, animation or moving content on the page.',
+    checks: [
+      { id: 'me-1', label: 'Any videos have accurate captions or a transcript', hint: 'Auto-generated captions alone are not sufficient — they must be corrected' },
+      { id: 'me-2', label: 'Audio content has a text alternative or transcript', hint: 'Deaf users must be able to access the same information' },
+      { id: 'me-3', label: 'Animations or auto-playing content can be paused or stopped', hint: 'Content that moves for more than 5 seconds must have a pause control' },
+      { id: 'me-4', label: 'No content flashes more than 3 times per second', hint: 'Flashing content can trigger seizures — this must never occur' },
+    ],
+  },
+  {
+    id: 'mobile',
+    icon: '📱',
+    title: 'Mobile & Touch',
+    hint: 'Test on a real device or browser DevTools mobile emulation (iPhone / Android).',
+    checks: [
+      { id: 'mo-1', label: 'Touch targets (buttons, links) are at least 44×44px', hint: 'Small touch targets cause errors for users with motor impairments' },
+      { id: 'mo-2', label: 'Page is usable in both portrait and landscape orientation', hint: 'Content must not be locked to a single orientation' },
+      { id: 'mo-3', label: 'Pinch-to-zoom is not disabled in the viewport meta tag', hint: 'user-scalable=no prevents low-vision users from zooming in' },
+      { id: 'mo-4', label: 'On-screen keyboard does not obscure the active input field', hint: 'Especially important on forms and login pages' },
+    ],
+  },
+  {
+    id: 'cognitive',
+    icon: '🧠',
+    title: 'Cognitive & Usability',
+    hint: 'Consider users with cognitive disabilities, low digital literacy, or those using the site for the first time.',
+    checks: [
+      { id: 'cg-1', label: 'The purpose of the page is clear within the first few seconds', hint: 'Users should not need to read the whole page to understand what to do' },
+      { id: 'cg-2', label: 'Complex processes show a clear step indicator', hint: 'Users should know how far through the process they are' },
+      { id: 'cg-3', label: 'Jargon and technical language is kept to a minimum', hint: 'Write for a reading age of around 11–12 years where possible' },
+      { id: 'cg-4', label: 'The user is given a chance to review and correct before final submission', hint: 'Show a summary before confirming any significant action' },
+      { id: 'cg-5', label: 'Session timeouts are warned in advance with a way to extend', hint: 'Users should not lose form data without warning' },
+    ],
+  },
+  {
+    id: 'wcag-aaa',
+    icon: '⭐',
+    title: 'WCAG 2.2 AAA — Enhanced Standards',
+    hint: 'AAA is the highest level of WCAG conformance. Not all criteria will apply to every page — mark N/A where genuinely not applicable.',
+    checks: [
+      { id: 'aaa-1',  label: '1.4.6 Enhanced Contrast — text has a 7:1 contrast ratio (not just 4.5:1)', hint: 'Large text needs 4.5:1 at AAA.' },
+      { id: 'aaa-2',  label: '1.4.7 Low or No Background Audio — no background sound in audio content, or it can be turned off', hint: 'Background music/noise in videos or audio clips must not interfere with speech' },
+      { id: 'aaa-3',  label: '1.4.8 Visual Presentation — text blocks are no wider than 80 characters, line spacing is 1.5×, text is not fully justified', hint: 'Check body text and form instructions' },
+      { id: 'aaa-4',  label: '1.4.9 Images of Text — no images of text are used (except logos)', hint: 'All text is real HTML text — not baked into an image' },
+      { id: 'aaa-5',  label: '2.1.3 Keyboard (No Exception) — every feature can be used by keyboard with no exceptions', hint: 'At AA, some exceptions may exist. At AAA, no exceptions are permitted.' },
+      { id: 'aaa-6',  label: '2.2.3 No Timing — no time limits on any task', hint: 'If session timeouts exist, this criterion cannot be met — mark N/A with a note' },
+      { id: 'aaa-7',  label: '2.2.4 Interruptions — the user can postpone or suppress all interruptions (except emergencies)', hint: 'Pop-ups and notifications should not interrupt the user unexpectedly' },
+      { id: 'aaa-8',  label: '2.3.3 Animation from Interactions — motion animations can be disabled (respects prefers-reduced-motion)', hint: 'Check that transitions and hover effects are suppressed when OS reduce-motion is on' },
+      { id: 'aaa-9',  label: '2.4.8 Location — the user knows where they are within the site (e.g. breadcrumbs or highlighted nav)', hint: 'A breadcrumb trail or highlighted menu item is sufficient' },
+      { id: 'aaa-10', label: '2.4.9 Link Purpose (Link Only) — every link is understandable without surrounding context', hint: '"Read more" links must include a visually hidden label.' },
+      { id: 'aaa-11', label: '2.4.12 Focus Not Obscured (Enhanced) — focused element is fully visible, never even partially hidden', hint: 'At AAA, the focused element must be completely unobscured.' },
+      { id: 'aaa-12', label: '2.5.5 Target Size (Enhanced) — all interactive targets are at least 44×44 CSS pixels', hint: 'Confirm buttons, links, and icons on the page — especially icon-only buttons.' },
+      { id: 'aaa-13', label: '2.5.6 Concurrent Input Mechanisms — the page does not restrict input to a single type', hint: 'Users must be able to switch between mouse, keyboard, and touch at any point' },
+      { id: 'aaa-14', label: '3.1.3 Unusual Words — a glossary or definition mechanism exists for jargon', hint: 'Check for any partner/industry-specific terms that may need explanation' },
+      { id: 'aaa-15', label: '3.1.5 Reading Level — content is readable at lower secondary school level', hint: 'Use a readability tool (e.g. Hemingway App) — aim for Grade 7–8' },
+      { id: 'aaa-16', label: '3.2.5 Change on Request — no context changes happen without explicit user request', hint: 'Pages must not auto-redirect or open new windows without user action' },
+      { id: 'aaa-17', label: '3.3.5 Help — context-sensitive help is available for all form inputs', hint: 'Inline help text or tooltips next to complex fields' },
+    ],
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function buildCheckId(pageId, catId, checkId) {
+  return `${pageId}__${catId}__${checkId}`;
+}
+
+function renderPages() {
+  const container = document.getElementById('pages-container');
+  const navLinks   = document.getElementById('nav-links');
+
+  PAGES.forEach(page => {
+    const a = document.createElement('a');
+    a.className = 'nav-item';
+    a.id = `nav-${page.id}`;
+    a.href = `#section-${page.id}`;
+    a.innerHTML = `<span class="nav-dot" id="dot-${page.id}"></span> ${page.name}`;
+    a.onclick = e => { e.preventDefault(); scrollToSection(page.id); };
+    navLinks.appendChild(a);
+
+    const section = document.createElement('div');
+    section.className = 'page-section';
+    section.id = `section-${page.id}`;
+
+    let categoriesHtml = '';
+    CATEGORIES.forEach(cat => {
+      let checksHtml = '';
+      cat.checks.forEach(chk => {
+        const fullId = buildCheckId(page.id, cat.id, chk.id);
+        checksHtml += `
+          <div class="check-row" id="row-${fullId}">
+            <div class="check-label">
+              ${chk.label}
+              ${chk.hint ? `<span class="hint">${chk.hint}</span>` : ''}
+            </div>
+            <div class="radio-group">
+              <label onmousedown="radioMousedown(this)" onclick="radioClick(this,'${fullId}')">
+                <input type="radio" name="${fullId}" value="pass" onchange="saveCheck('${fullId}','pass')"> ✓ Pass
+              </label>
+              <label onmousedown="radioMousedown(this)" onclick="radioClick(this,'${fullId}')">
+                <input type="radio" name="${fullId}" value="fail" onchange="saveCheck('${fullId}','fail')"> ✗ Fail
+              </label>
+              <label onmousedown="radioMousedown(this)" onclick="radioClick(this,'${fullId}')">
+                <input type="radio" name="${fullId}" value="na" onchange="saveCheck('${fullId}','na')"> N/A
+              </label>
+            </div>
+          </div>`;
+      });
+
+      categoriesHtml += `
+        <div class="category">
+          <div class="category-title">
+            <span class="cat-icon">${cat.icon}</span> ${cat.title}
+            <span class="info-tip" title="${cat.hint}">?</span>
+          </div>
+          ${checksHtml}
+        </div>`;
+    });
+
+    const notesId = `notes-${page.id}`;
+    categoriesHtml += `
+      <div class="category">
+        <div class="category-title">📌 Tester Notes</div>
+        <div class="notes-row">
+          <div class="notes-label">Any additional observations, environment details, or assistive technology used:</div>
+          <textarea id="${notesId}" placeholder="e.g. Tested with NVDA 2024.1 on Chrome 122..." rows="3" oninput="saveNotes('${page.id}')"></textarea>
+        </div>
+      </div>`;
+
+    const metaHtml = (() => {
+      const parts = [];
+      if (page.url) parts.push(`<span class="page-meta-link">🔗 <a href="${page.url}" target="_blank" rel="noopener">Open page</a></span>`);
+      if (page.nav) parts.push(`<span class="nav-instructions">↪ ${page.nav}</span>`);
+      return parts.length ? `<div class="page-meta-wrap">${parts.join('')}</div>` : '';
+    })();
+
+    section.innerHTML = `
+      <div class="page-header" onclick="toggleSection('${page.id}')">
+        <div>
+          <h3>${page.name}</h3>
+          ${metaHtml}
+        </div>
+        <span class="toggle">▼</span>
+      </div>
+      <div class="page-body">
+        ${categoriesHtml}
+        <div class="action-bar">
+          <button class="btn btn-outline" onclick="markAllPass('${page.id}')">Mark all Pass</button>
+          <button class="btn btn-outline" onclick="markAllNA('${page.id}')">Mark all N/A</button>
+        </div>
+      </div>`;
+
+    container.appendChild(section);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE / STORAGE
+// ─────────────────────────────────────────────────────────────────────────────
+
+function storageKey(id) { return `conpartner_manual_${id}`; }
+
+function saveCheck(fullId, value) {
+  localStorage.setItem(storageKey(fullId), value);
+  updateProgress();
+  updateNavDots();
+  updateSummary();
+}
+
+let radioWasChecked = false;
+
+function radioMousedown(label) {
+  radioWasChecked = label.querySelector('input').checked;
+}
+
+function radioClick(label, fullId) {
+  if (radioWasChecked) {
+    label.querySelector('input').checked = false;
+    localStorage.removeItem(storageKey(fullId));
+    updateProgress();
+    updateNavDots();
+    updateSummary();
+  }
+}
+
+function saveNotes(pageId) {
+  const val = document.getElementById(`notes-${pageId}`).value;
+  localStorage.setItem(storageKey(`notes-${pageId}`), val);
+}
+
+function saveMeta() {
+  localStorage.setItem('conpartner_meta_tester', document.getElementById('tester-name').value);
+  localStorage.setItem('conpartner_meta_date',   document.getElementById('test-date').value);
+  localStorage.setItem('conpartner_meta_sprint', document.getElementById('sprint-ref').value);
+}
+
+function loadAll() {
+  const tester = localStorage.getItem('conpartner_meta_tester');
+  const date   = localStorage.getItem('conpartner_meta_date');
+  const sprint = localStorage.getItem('conpartner_meta_sprint');
+  if (tester) document.getElementById('tester-name').value = tester;
+  if (date)   document.getElementById('test-date').value   = date;
+  if (sprint) document.getElementById('sprint-ref').value  = sprint;
+
+  PAGES.forEach(page => {
+    CATEGORIES.forEach(cat => {
+      cat.checks.forEach(chk => {
+        const fullId = buildCheckId(page.id, cat.id, chk.id);
+        const stored = localStorage.getItem(storageKey(fullId));
+        if (stored) {
+          const radio = document.querySelector(`input[name="${fullId}"][value="${stored}"]`);
+          if (radio) radio.checked = true;
+        }
+      });
+    });
+    const notes = localStorage.getItem(storageKey(`notes-${page.id}`));
+    if (notes) document.getElementById(`notes-${page.id}`).value = notes;
+  });
+
+  updateProgress();
+  updateNavDots();
+  updateSummary();
+}
+
+function clearAll() {
+  if (!confirm('Reset ALL answers and notes for every page? This cannot be undone.')) return;
+  Object.keys(localStorage)
+    .filter(k => k.startsWith('conpartner_'))
+    .forEach(k => localStorage.removeItem(k));
+  location.reload();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROGRESS & SUMMARY
+// ─────────────────────────────────────────────────────────────────────────────
+
+function getAllChecks() {
+  const results = [];
+  PAGES.forEach(page => {
+    CATEGORIES.forEach(cat => {
+      cat.checks.forEach(chk => {
+        const fullId = buildCheckId(page.id, cat.id, chk.id);
+        const stored = localStorage.getItem(storageKey(fullId)) || 'pending';
+        results.push({ fullId, pageId: page.id, pageName: page.name, catTitle: cat.title, label: chk.label, value: stored });
+      });
+    });
+  });
+  return results;
+}
+
+function updateProgress() {
+  const all = getAllChecks();
+  const answered = all.filter(c => c.value !== 'pending').length;
+  const pct = all.length ? Math.round(answered / all.length * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = `${answered} of ${all.length} checks completed (${pct}%)`;
+  const fails = all.filter(c => c.value === 'fail').length;
+  document.getElementById('fail-count-text').textContent = fails > 0 ? `${fails} failed` : '';
+}
+
+function updateNavDots() {
+  PAGES.forEach(page => {
+    const checks = [];
+    CATEGORIES.forEach(cat => {
+      cat.checks.forEach(chk => {
+        const fullId = buildCheckId(page.id, cat.id, chk.id);
+        checks.push(localStorage.getItem(storageKey(fullId)) || 'pending');
+      });
+    });
+    const hasFail    = checks.some(v => v === 'fail');
+    const allDone    = checks.every(v => v !== 'pending');
+    const someDone   = checks.some(v => v !== 'pending');
+    const navItem    = document.getElementById(`nav-${page.id}`);
+    navItem.classList.remove('done', 'partial', 'fail');
+    if (hasFail)       navItem.classList.add('fail');
+    else if (allDone)  navItem.classList.add('done');
+    else if (someDone) navItem.classList.add('partial');
+  });
+}
+
+function updateSummary() {
+  const all = getAllChecks();
+  const pass    = all.filter(c => c.value === 'pass').length;
+  const fail    = all.filter(c => c.value === 'fail').length;
+  const na      = all.filter(c => c.value === 'na').length;
+  const pending = all.filter(c => c.value === 'pending').length;
+
+  document.getElementById('sum-total').textContent   = all.length;
+  document.getElementById('sum-pass').textContent    = pass;
+  document.getElementById('sum-fail').textContent    = fail;
+  document.getElementById('sum-na').textContent      = na;
+  document.getElementById('sum-pending').textContent = pending;
+
+  const failsList = document.getElementById('fails-list');
+  failsList.innerHTML = '';
+  const failures = all.filter(c => c.value === 'fail');
+  if (failures.length) {
+    failsList.innerHTML = `<div style="font-size:.82rem;font-weight:700;color:#cc0000;margin-bottom:6px;">Failed checks requiring attention:</div>`;
+    failures.forEach(f => {
+      failsList.innerHTML += `<div class="fail-item"><strong>${f.pageName} — ${f.catTitle}:</strong> ${f.label}</div>`;
+    });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UI HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+
+function toggleToolsGuide() {
+  document.getElementById('tools-guide').classList.toggle('collapsed');
+}
+
+function toggleSection(pageId) {
+  document.getElementById(`section-${pageId}`).classList.toggle('collapsed');
+}
+function expandAll()   { document.querySelectorAll('.page-section').forEach(s => s.classList.remove('collapsed')); }
+function collapseAll() { document.querySelectorAll('.page-section').forEach(s => s.classList.add('collapsed')); }
+
+function scrollToSection(pageId) {
+  document.getElementById(`section-${pageId}`).scrollIntoView({ behavior: 'smooth' });
+  document.getElementById(`section-${pageId}`).classList.remove('collapsed');
+  document.querySelectorAll('.nav-item').forEach(a => a.classList.remove('active'));
+  document.getElementById(`nav-${pageId}`).classList.add('active');
+}
+
+function markAllPass(pageId) {
+  CATEGORIES.forEach(cat => {
+    cat.checks.forEach(chk => {
+      const fullId = buildCheckId(pageId, cat.id, chk.id);
+      const radio  = document.querySelector(`input[name="${fullId}"][value="pass"]`);
+      if (radio) { radio.checked = true; saveCheck(fullId, 'pass'); }
+    });
+  });
+}
+
+function markAllNA(pageId) {
+  CATEGORIES.forEach(cat => {
+    cat.checks.forEach(chk => {
+      const fullId = buildCheckId(pageId, cat.id, chk.id);
+      const radio  = document.querySelector(`input[name="${fullId}"][value="na"]`);
+      if (radio) { radio.checked = true; saveCheck(fullId, 'na'); }
+    });
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────────────────────
+
+renderPages();
+loadAll();
+
+if (!document.getElementById('test-date').value) {
+  document.getElementById('test-date').value = new Date().toISOString().split('T')[0];
+}
+
+collapseAll();
+</script>
+</body>
+</html>
