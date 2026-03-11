@@ -31,24 +31,22 @@ async function postToTeams({ webhookUrl, summaryData, today, regressions, label 
     ? regressions.map(r => `${r.page} (${r.browser})`).join(', ')
     : 'None';
 
+  // Build result rows as 4-column ColumnSets
   const resultRows = summaryData.map(r => {
     const isRegression = regressions?.some(x => x.page === r.page && x.browser === r.browser);
-
     let trend = '→';
-    let trendColor = 'Default';
     if (r.previousCounts && r.previousCounts.total !== undefined) {
-      if (r.total > r.previousCounts.total)      { trend = '↑'; trendColor = 'Attention'; }
-      else if (r.total < r.previousCounts.total) { trend = '↓'; trendColor = 'Good'; }
+      if (r.total > r.previousCounts.total)      trend = '↑';
+      else if (r.total < r.previousCounts.total) trend = '↓';
     }
-
+    const status = isRegression ? '⚠️' : (r.total === 0 ? '✅' : '');
     return {
       type: 'ColumnSet',
       columns: [
-        { type: 'Column', width: 'stretch', items: [{ type: 'TextBlock', text: `${r.page} — ${r.browser}`, wrap: true, size: 'Small' }] },
+        { type: 'Column', width: 'stretch', items: [{ type: 'TextBlock', text: `${r.page} — ${r.browser}`, size: 'Small' }] },
         { type: 'Column', width: 'auto',    items: [{ type: 'TextBlock', text: String(r.total),    color: r.total    > 0 ? 'Warning'   : 'Good',      size: 'Small' }] },
         { type: 'Column', width: 'auto',    items: [{ type: 'TextBlock', text: String(r.critical), color: r.critical > 0 ? 'Attention' : 'Good',      size: 'Small' }] },
-        { type: 'Column', width: 'auto',    items: [{ type: 'TextBlock', text: trend,              color: trendColor,                                  size: 'Small' }] },
-        { type: 'Column', width: 'auto',    items: [{ type: 'TextBlock', text: isRegression ? '⚠️' : '✅',                                             size: 'Small' }] },
+        { type: 'Column', width: 'auto',    items: [{ type: 'TextBlock', text: `${trend} ${status}`,                                                   size: 'Small' }] },
       ],
       separator: true,
     };
@@ -97,7 +95,6 @@ async function postToTeams({ webhookUrl, summaryData, today, regressions, label 
           { type: 'Column', width: 'stretch', items: [{ type: 'TextBlock', text: 'Page — Browser', weight: 'Bolder', size: 'Small' }] },
           { type: 'Column', width: 'auto',    items: [{ type: 'TextBlock', text: 'Total',          weight: 'Bolder', size: 'Small' }] },
           { type: 'Column', width: 'auto',    items: [{ type: 'TextBlock', text: 'Crit',           weight: 'Bolder', size: 'Small' }] },
-          { type: 'Column', width: 'auto',    items: [{ type: 'TextBlock', text: 'Trend',          weight: 'Bolder', size: 'Small' }] },
           { type: 'Column', width: 'auto',    items: [{ type: 'TextBlock', text: 'OK?',            weight: 'Bolder', size: 'Small' }] },
         ],
       },
